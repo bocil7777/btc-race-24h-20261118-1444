@@ -56,10 +56,13 @@ function trailHigh(minutes: number): bigint {
 
 // While holding, decide whether this close exits the position, and
 // build the sell order when it does. Returns null to stay in.
+// The target and the stop trigger when the close REACHES the level,
+// not only once it has passed it: with integer prices the exact level
+// is reachable, and waiting another bar past it only pays slippage.
 function exitOrder(close: bigint, qty: bigint): OrderInput | null {
   if (fillPrice === null) return null;
-  const up = close * BPS_DEN > fillPrice * (BPS_DEN + TAKE_BPS);
-  const down = close * BPS_DEN < fillPrice * (BPS_DEN - CUT_BPS);
+  const up = close * BPS_DEN >= fillPrice * (BPS_DEN + TAKE_BPS);
+  const down = close * BPS_DEN <= fillPrice * (BPS_DEN - CUT_BPS);
   if (!up && !down) return null;
   return { side: 'sell', symbol: SYMBOL, qty, max_slippage_bps: SLIP_BPS };
 }
